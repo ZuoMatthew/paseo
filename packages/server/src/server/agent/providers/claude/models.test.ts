@@ -3,24 +3,22 @@ import { describe, expect, it } from "vitest";
 import { getClaudeModels, normalizeClaudeRuntimeModelId } from "./models.js";
 
 describe("getClaudeModels", () => {
-  it("returns all claude models", () => {
+  it("returns all claude models with expected labels", () => {
     const models = getClaudeModels();
-    expect(models.map((m) => m.id)).toEqual([
-      "claude-opus-4-7[1m]",
-      "claude-opus-4-7",
-      "claude-opus-4-6[1m]",
-      "claude-opus-4-6",
-      "claude-sonnet-4-6[1m]",
-      "claude-sonnet-4-6",
-      "claude-haiku-4-5",
-    ]);
+    const labels = models.map((m) => m.label);
+    expect(labels).toContain("Opus 4.7 1M");
+    expect(labels).toContain("Opus 4.7");
+    expect(labels).toContain("Opus 4.6 1M");
+    expect(labels).toContain("Opus 4.6");
+    expect(labels).toContain("Sonnet 4.6");
+    expect(labels).toContain("Haiku 4.5");
   });
 
   it("marks exactly one model as default", () => {
     const models = getClaudeModels();
     const defaults = models.filter((m) => m.isDefault);
     expect(defaults).toHaveLength(1);
-    expect(defaults[0].id).toBe("claude-opus-4-6");
+    expect(defaults[0].label).toBe("Opus 4.6");
   });
 
   it("returns fresh copies each call", () => {
