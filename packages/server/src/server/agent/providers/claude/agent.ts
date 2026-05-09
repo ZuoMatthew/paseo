@@ -271,6 +271,14 @@ function errorToMessageString(error: unknown): string {
   return "";
 }
 
+function isBenignClaudeShutdownError(error: unknown): boolean {
+  const message = errorToMessageString(error).toLowerCase();
+  return (
+    message.includes("processtransport is not ready for writing") ||
+    message.includes("transport closed")
+  );
+}
+
 function firstStringField(
   input: Record<string, unknown>,
   primaryKey: string,
@@ -2183,6 +2191,13 @@ class ClaudeAgentSession implements AgentSession {
         "Claude query operation settled",
       );
     } catch (error) {
+      if (isBenignClaudeShutdownError(error)) {
+        this.logger.debug(
+          { err: error, label, durationMs: Date.now() - startedAt },
+          "Claude query shutdown operation skipped benign transport-close error",
+        );
+        return;
+      }
       this.logger.warn({ err: error, label }, "Claude query operation did not settle cleanly");
     }
   }
