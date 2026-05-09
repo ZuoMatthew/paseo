@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 import { getClaudeModels, normalizeClaudeRuntimeModelId } from "./models.js";
 
@@ -26,6 +28,26 @@ describe("getClaudeModels", () => {
     const b = getClaudeModels();
     expect(a).not.toBe(b);
     expect(a[0]).not.toBe(b[0]);
+  });
+
+  it("ignores non-claude ANTHROPIC_MODEL overrides", async () => {
+    const previous = process.env.ANTHROPIC_MODEL;
+    process.env.ANTHROPIC_MODEL = "minimax-m2.5-free";
+    try {
+      const modulePath = pathToFileURL(path.resolve(__dirname, "./models.ts")).href;
+      const mod = (await import(`${modulePath}?t=${Date.now()}`)) as {
+        getClaudeModels: () => Array<{ id: string }>;
+      };
+      const models = mod.getClaudeModels();
+      expect(models.some((model) => model.id.includes("minimax"))).toBe(false);
+      expect(models.every((model) => /claude|opus|sonnet|haiku/i.test(model.id))).toBe(true);
+    } finally {
+      if (previous === undefined) {
+        delete process.env.ANTHROPIC_MODEL;
+      } else {
+        process.env.ANTHROPIC_MODEL = previous;
+      }
+    }
   });
 });
 

@@ -15,31 +15,64 @@ const CLAUDE_OPUS_4_7_THINKING_OPTIONS = [
   { id: "max", label: "Max" },
 ] as const;
 
+function isClaudeModelId(value: string | undefined): value is string {
+  if (typeof value !== "string") {
+    return false;
+  }
+  const trimmed = value.trim().toLowerCase();
+  return trimmed.startsWith("claude-") || /^(opus|sonnet|haiku)[-_ ]+\d+[.-]\d+/.test(trimmed);
+}
+
+function resolveClaudeModelOverride(...values: Array<string | undefined>): string | undefined {
+  for (const value of values) {
+    if (isClaudeModelId(value)) {
+      return value.trim();
+    }
+  }
+  return undefined;
+}
+
 const CLAUDE_MODELS: AgentModelDefinition[] = [
   {
     provider: "claude",
-    id: process.env.ANTHROPIC_MODEL ?? process.env.ANTHROPIC_DEFAULT_OPUS_MODEL ?? "claude-opus-4-7[1m]",
+    id:
+      resolveClaudeModelOverride(
+        process.env.ANTHROPIC_MODEL,
+        process.env.ANTHROPIC_DEFAULT_OPUS_MODEL,
+      ) ?? "claude-opus-4-7[1m]",
     label: "Opus 4.7 1M",
     description: "Opus 4.7 with 1M context window",
     thinkingOptions: [...CLAUDE_OPUS_4_7_THINKING_OPTIONS],
   },
   {
     provider: "claude",
-    id: process.env.ANTHROPIC_MODEL ?? process.env.ANTHROPIC_DEFAULT_OPUS_MODEL ?? "claude-opus-4-7",
+    id:
+      resolveClaudeModelOverride(
+        process.env.ANTHROPIC_MODEL,
+        process.env.ANTHROPIC_DEFAULT_OPUS_MODEL,
+      ) ?? "claude-opus-4-7",
     label: "Opus 4.7",
     description: "Opus 4.7 · Latest release",
     thinkingOptions: [...CLAUDE_OPUS_4_7_THINKING_OPTIONS],
   },
   {
     provider: "claude",
-    id: process.env.ANTHROPIC_MODEL ?? process.env.ANTHROPIC_DEFAULT_OPUS_MODEL ?? "claude-opus-4-6[1m]",
+    id:
+      resolveClaudeModelOverride(
+        process.env.ANTHROPIC_MODEL,
+        process.env.ANTHROPIC_DEFAULT_OPUS_MODEL,
+      ) ?? "claude-opus-4-6[1m]",
     label: "Opus 4.6 1M",
     description: "Opus 4.6 with 1M context window",
     thinkingOptions: [...CLAUDE_THINKING_OPTIONS],
   },
   {
     provider: "claude",
-    id: process.env.ANTHROPIC_MODEL ?? process.env.ANTHROPIC_DEFAULT_OPUS_MODEL ?? "claude-opus-4-6",
+    id:
+      resolveClaudeModelOverride(
+        process.env.ANTHROPIC_MODEL,
+        process.env.ANTHROPIC_DEFAULT_OPUS_MODEL,
+      ) ?? "claude-opus-4-6",
     label: "Opus 4.6",
     description: "Opus 4.6 · Most capable for complex work",
     isDefault: true,
@@ -47,21 +80,33 @@ const CLAUDE_MODELS: AgentModelDefinition[] = [
   },
   {
     provider: "claude",
-    id: process.env.ANTHROPIC_MODEL ?? process.env.ANTHROPIC_DEFAULT_SONNET_MODEL ?? "claude-sonnet-4-6[1m]",
+    id:
+      resolveClaudeModelOverride(
+        process.env.ANTHROPIC_MODEL,
+        process.env.ANTHROPIC_DEFAULT_SONNET_MODEL,
+      ) ?? "claude-sonnet-4-6[1m]",
     label: "Sonnet 4.6 1M",
     description: "Sonnet 4.6 with 1M context window",
     thinkingOptions: [...CLAUDE_THINKING_OPTIONS],
   },
   {
     provider: "claude",
-    id: process.env.ANTHROPIC_MODEL ?? process.env.ANTHROPIC_DEFAULT_SONNET_MODEL ?? "claude-sonnet-4-6",
+    id:
+      resolveClaudeModelOverride(
+        process.env.ANTHROPIC_MODEL,
+        process.env.ANTHROPIC_DEFAULT_SONNET_MODEL,
+      ) ?? "claude-sonnet-4-6",
     label: "Sonnet 4.6",
     description: "Sonnet 4.6 · Best for everyday tasks",
     thinkingOptions: [...CLAUDE_THINKING_OPTIONS],
   },
   {
     provider: "claude",
-    id: process.env.ANTHROPIC_MODEL ?? process.env.ANTHROPIC_DEFAULT_HAIKU_MODEL ?? "claude-haiku-4-5",
+    id:
+      resolveClaudeModelOverride(
+        process.env.ANTHROPIC_MODEL,
+        process.env.ANTHROPIC_DEFAULT_HAIKU_MODEL,
+      ) ?? "claude-haiku-4-5",
     label: "Haiku 4.5",
     description: "Haiku 4.5 · Fastest for quick answers",
   },
